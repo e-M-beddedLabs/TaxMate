@@ -1,21 +1,18 @@
-# Taxmate v0
+# TaxMate
 
-Minimal tax tracking backend.
+TaxMate is a full-stack tax tracking and reporting system built for hackathons and early-stage startups.
 
-## Stack
+## Features
+- User authentication
+- Income & expense tracking
+- GST-aware tax calculation
+- Period-based reports (Month, FY, YTD)
+- Dashboard analytics
+- CSV-ready architecture (coming next)
 
-- FastAPI
-- PostgreSQL
-- SQLAlchemy
-- JWT Auth
-- OCR via Tesseract
+## Tech Stack
+**Frontend:** React, Vite, Tailwind  
+**Backend:** FastAPI, PostgreSQL, SQLAlchemy  
 
-## Run
-
-uvicorn app.main:app --reload
-
-## Rules
-
-- All inputs normalize into TaxRecord
-- Confidence score is mandatory
-- No bypass paths
+## Status
+Hackathon-ready v0 baseline.
