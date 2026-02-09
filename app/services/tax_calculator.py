@@ -1,6 +1,6 @@
 from typing import List
 from app.models.tax_record import TaxRecord
-
+from app.services.tax_rules import compute_income_tax
 
 def compute_tax_for_record(record: TaxRecord) -> None:
     """
@@ -29,7 +29,7 @@ def compute_tax_for_record(record: TaxRecord) -> None:
 def compute_summary(records: List[TaxRecord]) -> dict:
     total_income = 0.0
     total_expense = 0.0
-    estimated_tax = 0.0
+    gst_tax = 0.0
 
     for r in records:
         taxable = r.taxable_amount or 0.0
@@ -40,7 +40,13 @@ def compute_summary(records: List[TaxRecord]) -> dict:
         elif r.transaction_type == "expense":
             total_expense += taxable
 
-        estimated_tax += tax
+        gst_tax += tax
+    
+    # Calculate income tax based on total income
+    income_tax = compute_income_tax(total_income)
+    
+    # Total estimated tax is GST + Income Tax
+    estimated_tax = gst_tax + income_tax
 
     return {
         "total_income": round(total_income, 2),

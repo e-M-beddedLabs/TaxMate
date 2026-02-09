@@ -3,12 +3,18 @@ from collections import defaultdict
 from app.models.tax_record import TaxRecord
 
 
-def build_dashboard(db: Session, user_id: int) -> dict:
-    records = (
-        db.query(TaxRecord)
-        .filter(TaxRecord.user_id == user_id)
-        .all()
-    )
+from typing import Optional
+from datetime import date
+
+def build_dashboard(db: Session, user_id: int, start_date: Optional[date] = None, end_date: Optional[date] = None) -> dict:
+    query = db.query(TaxRecord).filter(TaxRecord.user_id == user_id)
+
+    if start_date:
+        query = query.filter(TaxRecord.date >= start_date)
+    if end_date:
+        query = query.filter(TaxRecord.date <= end_date)
+
+    records = query.all()
 
     total_income = 0.0
     total_expense = 0.0

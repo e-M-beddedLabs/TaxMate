@@ -13,7 +13,7 @@ class TaxRecordBase(BaseModel):
     taxable_amount: float
 
     # ✅ NEW (primary)
-    tax_rate: Optional[float] = 0.0   # percentage, e.g. 5, 12, 18
+    tax_rate: Optional[float] = None   # percentage, e.g. 5, 12, 18
 
     # ⚠️ legacy (kept for backward compatibility)
     tax_type: Optional[str] = None    # GST | NONE (deprecated)

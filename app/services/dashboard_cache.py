@@ -10,3 +10,8 @@ def warm_dashboard_cache(db, user_id: int):
 
 def get_cached_dashboard(user_id: int):
     return _dashboard_cache.get(user_id)
+
+
+def invalidate_dashboard_cache(user_id: int):
+    if user_id in _dashboard_cache:
+        del _dashboard_cache[user_id]
