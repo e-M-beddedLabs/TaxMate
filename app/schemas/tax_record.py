@@ -9,9 +9,14 @@ class TaxRecordBase(BaseModel):
     description: str
     category: str
     transaction_type: str  # income | expense
-    taxable_amount: float
-    tax_type: str  # GST | NONE
 
+    taxable_amount: float
+
+    # ✅ NEW (primary)
+    tax_rate: Optional[float] = 0.0   # percentage, e.g. 5, 12, 18
+
+    # ⚠️ legacy (kept for backward compatibility)
+    tax_type: Optional[str] = None    # GST | NONE (deprecated)
 
     @validator("transaction_type")
     def validate_transaction_type(cls, v):
@@ -19,20 +24,19 @@ class TaxRecordBase(BaseModel):
             raise ValueError("transaction_type must be income or expense")
         return v
 
-
-    @validator("tax_type")
-    def validate_tax_type(cls, v):
-        if v not in {"GST", "NONE"}:
-            raise ValueError("tax_type must be GST or NONE")
+    @validator("tax_rate")
+    def validate_tax_rate(cls, v):
+        if v is None:
+            return 0.0
+        if v < 0 or v > 100:
+            raise ValueError("tax_rate must be between 0 and 100")
         return v
-
 
     @validator("taxable_amount")
     def validate_amount(cls, v):
         if v <= 0:
             raise ValueError("taxable_amount must be > 0")
         return v
-
 
     @validator("date")
     def validate_date(cls, v):

@@ -1,30 +1,31 @@
-from sqlalchemy import Column, Integer, String, Float, Date, DateTime, ForeignKey
-from sqlalchemy.sql import func
+from sqlalchemy import Column, Integer, String, Float, Date, ForeignKey
+from sqlalchemy.orm import relationship
 from app.core.database import Base
+
 
 class TaxRecord(Base):
     __tablename__ = "tax_records"
 
     id = Column(Integer, primary_key=True, index=True)
 
-    user_id = Column(
-        Integer,
-        ForeignKey("users.id", ondelete="CASCADE"),
-        nullable=False,
-        index=True,
-    )
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
 
-    source = Column(String)  # manual | upload | csv
-    date = Column(Date)
-    description = Column(String)
+    source = Column(String, nullable=False)
+    date = Column(Date, nullable=False)
+    description = Column(String, nullable=False)
+    category = Column(String, nullable=False)
 
-    category = Column(String)
-    transaction_type = Column(String)  # income | expense
+    transaction_type = Column(String, nullable=False)  # income | expense
 
-    taxable_amount = Column(Float)
-    tax_type = Column(String)  # GST | NONE
-    tax_amount = Column(Float)
-    total_amount = Column(Float)
+    taxable_amount = Column(Float, nullable=False)
+
+    # 🔑 NEW — REQUIRED
+    tax_type = Column(String, nullable=False, default="NONE")
+    tax_rate = Column(Float, nullable=False, default=0.0)
+
+    tax_amount = Column(Float, nullable=False, default=0.0)
+    total_amount = Column(Float, nullable=False, default=0.0)
 
     confidence_score = Column(Float, nullable=False, default=1.0)
-    created_at = Column(DateTime, server_default=func.now())
+
+    user = relationship("User", back_populates="records")
