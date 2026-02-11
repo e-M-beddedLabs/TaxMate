@@ -22,7 +22,9 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  ResponsiveContainer
+  ResponsiveContainer,
+  AreaChart,
+  Area
 } from 'recharts';
 import { Button } from '../components/ui';
 
@@ -347,9 +349,55 @@ export const Landing: React.FC = () => {
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
             >
-              <div className="aspect-square rounded-3xl bg-gradient-to-br from-primary-500/20 via-secondary-500/20 to-accent-500/20 flex items-center justify-center relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br from-primary-600/10 to-transparent" />
-                <Calculator size={120} className="text-primary-600/40 dark:text-primary-500/40" />
+              <div className="aspect-square rounded-3xl bg-gradient-to-br from-primary-500/5 via-secondary-500/5 to-accent-500/5 flex items-center justify-center relative overflow-hidden border border-primary-500/10 p-6">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart
+                    data={[
+                      { month: 'Jan', users: 4000 },
+                      { month: 'Feb', users: 3000 },
+                      { month: 'Mar', users: 5000 },
+                      { month: 'Apr', users: 4500 },
+                      { month: 'May', users: 6000 },
+                      { month: 'Jun', users: 5500 },
+                      { month: 'Jul', users: 7000 },
+                    ]}
+                    margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
+                  >
+                    <defs>
+                      <linearGradient id="colorUsers" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#C72403" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="#C72403" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" opacity={0.3} />
+                    <XAxis
+                      dataKey="month"
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fill: 'var(--muted)', fontSize: 12 }}
+                      dy={10}
+                    />
+                    <YAxis hide />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: 'var(--card)',
+                        borderColor: 'var(--border)',
+                        borderRadius: '8px',
+                        color: 'var(--foreground)'
+                      }}
+                      itemStyle={{ color: 'var(--foreground)' }}
+                      cursor={{ stroke: 'var(--muted)', strokeWidth: 1 }}
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="users"
+                      stroke="#C72403"
+                      strokeWidth={3}
+                      fillOpacity={1}
+                      fill="url(#colorUsers)"
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
               </div>
               {/* Floating elements */}
               <motion.div
