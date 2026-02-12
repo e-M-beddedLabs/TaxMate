@@ -51,6 +51,12 @@ export default {
           900: '#7e1b38',
           950: '#320d1F',
         },
+        // Text colors
+        text: {
+          primary: '#f5f0f2',
+          secondary: '#9a8f94',
+          muted: '#6b5f64',
+        },
         // Dark mode colors based on burgundy
         dark: {
           bg: '#0d0a0c',
