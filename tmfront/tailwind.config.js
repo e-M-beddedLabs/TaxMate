@@ -57,6 +57,16 @@ export default {
           secondary: '#9a8f94',
           muted: '#6b5f64',
         },
+        // Surface colors for glassmorphism
+        surface: {
+          DEFAULT: 'rgba(255, 255, 255, 0.03)',
+          hover: 'rgba(255, 255, 255, 0.08)',
+          active: 'rgba(255, 255, 255, 0.12)',
+        },
+        border: {
+          DEFAULT: 'rgba(255, 255, 255, 0.08)',
+          hover: 'rgba(255, 255, 255, 0.15)',
+        },
         // Dark mode colors based on burgundy
         dark: {
           bg: '#0d0a0c',
