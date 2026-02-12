@@ -1,74 +1,49 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { cn } from '../../utils/format';
-import { Eye, EyeOff } from 'lucide-react';
+import React from 'react';
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   error?: string;
   icon?: React.ReactNode;
-  showPasswordToggle?: boolean;
 }
 
-export const Input: React.FC<InputProps> = ({
+const Input: React.FC<InputProps> = ({
   label,
   error,
   icon,
-  showPasswordToggle,
-  className,
-  id,
-  type,
+  className = '',
   ...props
 }) => {
-  const [showPassword, setShowPassword] = useState(false);
-  const inputId = id || label?.toLowerCase().replace(/\s/g, '-');
-  const isPassword = type === 'password';
-  const inputType = isPassword && showPassword ? 'text' : type;
-
   return (
     <div className="w-full">
       {label && (
-        <label htmlFor={inputId} className="label">
+        <label className="block text-sm font-medium text-text-secondary mb-1.5 ml-1">
           {label}
         </label>
       )}
-      <div className="relative">
+      <div className="relative group">
         {icon && (
-          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-light-muted dark:text-dark-muted">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-text-muted group-focus-within:text-highlight transition-colors">
             {icon}
           </div>
         )}
         <input
-          id={inputId}
-          type={inputType}
-          className={cn(
-            'input',
-            icon ? 'pl-10' : '',
-            (isPassword || showPasswordToggle) ? 'pr-10' : '',
-            error && 'border-red-500 focus:ring-red-500/30 focus:border-red-500',
-            className
-          )}
+          className={`
+            w-full bg-surface border border-white/10 rounded-xl px-4 py-3
+            text-text-primary placeholder:text-text-muted
+            focus:outline-none focus:ring-2 focus:ring-highlight/20 focus:border-highlight/50
+            transition-all duration-200
+            ${icon ? 'pl-10' : ''}
+            ${error ? 'border-red-500/50 focus:border-red-500' : 'hover:border-white/20'}
+            ${className}
+          `}
           {...props}
         />
-        {(isPassword || showPasswordToggle) && (
-          <button
-            type="button"
-            onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-light-muted dark:text-dark-muted hover:text-light-text dark:hover:text-dark-text transition-colors"
-          >
-            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-          </button>
-        )}
       </div>
       {error && (
-        <motion.p
-          initial={{ opacity: 0, y: -5 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mt-1.5 text-sm text-red-500"
-        >
-          {error}
-        </motion.p>
+        <p className="mt-1 text-sm text-red-400 ml-1">{error}</p>
       )}
     </div>
   );
 };
+
+export { Input };
