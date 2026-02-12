@@ -8,6 +8,7 @@ export default {
   theme: {
     extend: {
       colors: {
+        background: '#060606',
         // Primary - Vibrant Red/Orange #C72403
         primary: {
           50: '#fef3f2',
