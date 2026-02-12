@@ -9,6 +9,7 @@ export default {
     extend: {
       colors: {
         background: '#060606',
+        highlight: '#fe6162',
         // Primary - Vibrant Red/Orange #C72403
         primary: {
           50: '#fef3f2',
