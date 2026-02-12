@@ -1,9 +1,8 @@
 import React, { useState } from "react"
 import { useNavigate, Link } from "react-router-dom"
 import { motion } from "framer-motion"
-import { ArrowLeft, CheckCircle, Save, X } from "lucide-react"
+import { ArrowLeft, CheckCircle } from "lucide-react"
 import { Button, Input, Select, Card } from "../components/ui"
-import Navbar from "../components/ui/Navbar"
 import { createRecord } from "../services/records"
 import { formatCurrency } from "../utils/format"
 import type { RecordCreate } from "../types"
@@ -39,8 +38,8 @@ export const AddRecord: React.FC = () => {
     category: "Sales",
     transaction_type: "income",
     taxable_amount: 0,
-    tax_type: "GST",
-    tax_rate: 18,
+    tax_type: "GST", // Default generic type
+    tax_rate: 18,    // Default rate
   })
 
   // Local state for UI selection
@@ -59,8 +58,10 @@ export const AddRecord: React.FC = () => {
     } else if (selectedTaxOption.startsWith("GST_")) {
       rate = Number(selectedTaxOption.split("_")[1])
     }
+    // "NONE" means 0
     return Math.round(form.taxable_amount * (rate / 100))
   }, [selectedTaxOption, customRate, form.taxable_amount])
+
 
   const totalAmount = form.taxable_amount + taxAmount
 
@@ -78,16 +79,18 @@ export const AddRecord: React.FC = () => {
       return
     }
 
+    // Determine final tax rate and type
     let finalRate = 0
-    let finalType = "GST"
+    let finalType = "GST" // Default classification
 
     if (selectedTaxOption === "NONE") {
       finalRate = 0
       finalType = "NONE"
     } else if (selectedTaxOption === "CUSTOM") {
       finalRate = Number(customRate) || 0
-      finalType = "GST"
+      finalType = "GST" // Treat custom as GST/Tax for now
     } else {
+      // GST_5, GST_12 etc
       finalRate = Number(selectedTaxOption.split("_")[1])
       finalType = "GST"
     }
@@ -101,7 +104,7 @@ export const AddRecord: React.FC = () => {
         tax_rate: finalRate,
       })
       setSuccess(true)
-      setTimeout(() => navigate("/records"), 1500)
+      setTimeout(() => navigate("/records"), 1200)
     } catch (err: any) {
       setError(err?.message || "Failed to add record")
     } finally {
@@ -109,178 +112,163 @@ export const AddRecord: React.FC = () => {
     }
   }
 
+
   if (success) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-[60vh] flex items-center justify-center">
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           className="text-center"
         >
-          <div className="w-20 h-20 rounded-full bg-emerald-500/10 flex items-center justify-center mx-auto mb-6 border border-emerald-500/20 shadow-xl shadow-emerald-500/5">
-            <CheckCircle className="text-emerald-500" size={40} />
+          <div className="w-16 h-16 rounded-full bg-green-500/10 flex items-center justify-center mx-auto mb-4">
+            <CheckCircle className="text-green-500" size={32} />
           </div>
-          <h2 className="text-3xl font-bold mb-2 text-text-primary">Record Added</h2>
-          <p className="text-text-secondary">Redirecting to records...</p>
+          <h2 className="text-2xl font-bold mb-2">Record Added</h2>
+          <p className="text-light-muted">Redirecting to records…</p>
         </motion.div>
       </div>
     )
   }
 
-  return (
-    <div className="min-h-screen bg-background text-text-primary selection:bg-highlight/30">
-      <Navbar />
 
-      {/* Background Gradients */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-blue-500/5 rounded-full blur-[100px]" />
-        <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-purple-500/5 rounded-full blur-[100px]" />
+  return (
+    <div className="max-w-2xl mx-auto">
+      {/* ... (Header remains same) */}
+      <div className="mb-6">
+        <Link to="/records" className="inline-flex items-center gap-2 mb-4">
+          <ArrowLeft size={18} />
+          Back to records
+        </Link>
+        <h1 className="text-2xl font-bold">Add Record</h1>
+        <p className="text-light-muted">Manually add an income or expense</p>
       </div>
 
-      <div className="max-w-3xl mx-auto pt-32 pb-20 px-4 sm:px-6 relative z-10">
-        <div className="mb-8 flex items-center justify-between">
-          <div>
-            <Link to="/records" className="inline-flex items-center gap-2 text-text-secondary hover:text-white transition-colors mb-2 group">
-              <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
-              Back to records
-            </Link>
-            <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-white/70">
-              Add New Record
-            </h1>
-          </div>
-        </div>
+      <Card>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* ... (Error display remains same) */}
+          {error && (
+            <div className="p-3 rounded bg-red-500/10 text-red-600 text-sm">
+              {error}
+            </div>
+          )}
 
-        <Card className="p-1 border-white/5 bg-white/[0.01]">
-          <div className="bg-[#0A0A0A]/50 backdrop-blur-xl rounded-xl p-6 sm:p-8 border border-white/5">
-            <form onSubmit={handleSubmit} className="space-y-8">
-              {error && (
-                <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm flex items-center gap-3"
-                >
-                  <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-                  {error}
-                </motion.div>
-              )}
-
-              <div className="grid sm:grid-cols-2 gap-6">
-                <Input
-                  label="Date"
-                  type="date"
-                  value={form.date}
-                  onChange={(e) => setForm({ ...form, date: e.target.value })}
-                  required
-                />
-
-                <Select
-                  label="Transaction Type"
-                  options={transactionTypeOptions}
-                  value={form.transaction_type}
-                  onChange={(e) =>
-                    setForm({
-                      ...form,
-                      transaction_type: e.target.value as "income" | "expense",
-                    })
-                  }
-                />
-              </div>
-
-              <Input
-                label="Description"
-                placeholder="e.g. Website Design Project"
-                value={form.description}
-                onChange={(e) => setForm({ ...form, description: e.target.value })}
+          <div className="grid sm:grid-cols-2 gap-4">
+            <div>
+              <label className="label">Date</label>
+              <input
+                type="date"
+                value={form.date}
+                onChange={(e) => setForm({ ...form, date: e.target.value })}
+                className="input"
                 required
               />
+            </div>
 
-              <Select
-                label="Category"
-                options={categoryOptions}
-                value={form.category}
-                onChange={(e) => setForm({ ...form, category: e.target.value })}
-              />
-
-              <div className="grid sm:grid-cols-2 gap-6">
-                <Input
-                  label="Taxable Amount"
-                  type="number"
-                  min={0}
-                  placeholder="0.00"
-                  value={form.taxable_amount || ""}
-                  onChange={(e) =>
-                    setForm({
-                      ...form,
-                      taxable_amount: Number(e.target.value) || 0,
-                    })
-                  }
-                  required
-                />
-
-                <div className="space-y-2">
-                  <Select
-                    label="Tax Slab"
-                    options={taxTypeOptions}
-                    value={selectedTaxOption}
-                    onChange={(e) => setSelectedTaxOption(e.target.value)}
-                  />
-                  {selectedTaxOption === "CUSTOM" && (
-                    <div className="flex items-center gap-2 animate-in fade-in slide-in-from-top-2 pt-2">
-                      <Input
-                        label="Rate %"
-                        type="number"
-                        min="0"
-                        max="100"
-                        value={customRate}
-                        onChange={(e) => setCustomRate(e.target.value)}
-                      />
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Live Calculaton Card */}
-              <div className="p-6 rounded-xl bg-white/[0.03] border border-white/10 space-y-3">
-                <div className="flex justify-between text-sm text-text-secondary">
-                  <span>Taxable Amount</span>
-                  <span>{formatCurrency(form.taxable_amount)}</span>
-                </div>
-                <div className="flex justify-between text-sm text-text-secondary">
-                  <span>Tax ({form.transaction_type === 'income' ? 'GST Collected' : 'GST Paid'})</span>
-                  <span className="text-highlight">{formatCurrency(taxAmount)}</span>
-                </div>
-                <div className="h-px bg-white/10 my-2" />
-                <div className="flex justify-between font-bold text-lg text-text-primary">
-                  <span>Total Amount</span>
-                  <span>{formatCurrency(totalAmount)}</span>
-                </div>
-              </div>
-
-              <div className="flex gap-4 pt-4">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  onClick={() => navigate("/records")}
-                  className="flex-1"
-                >
-                  <X size={18} className="mr-2" />
-                  Cancel
-                </Button>
-
-                <Button
-                  type="submit"
-                  variant="primary"
-                  isLoading={isLoading}
-                  className="flex-[2]"
-                >
-                  <Save size={18} className="mr-2" />
-                  Save Record
-                </Button>
-              </div>
-            </form>
+            <Select
+              label="Transaction Type"
+              options={transactionTypeOptions}
+              value={form.transaction_type}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  transaction_type: e.target.value as "income" | "expense",
+                })
+              }
+            />
           </div>
-        </Card>
-      </div>
+
+          <Input
+            label="Description"
+            value={form.description}
+            onChange={(e) => setForm({ ...form, description: e.target.value })}
+            required
+          />
+
+          <Select
+            label="Category"
+            options={categoryOptions}
+            value={form.category}
+            onChange={(e) => setForm({ ...form, category: e.target.value })}
+          />
+
+          <div className="grid sm:grid-cols-2 gap-4">
+            <Input
+              label="Taxable Amount"
+              type="number"
+              min={0}
+              value={form.taxable_amount || ""}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  taxable_amount: Number(e.target.value) || 0,
+                })
+              }
+              required
+            />
+
+            <div className="space-y-2">
+              <Select
+                label="Tax Slab"
+                options={taxTypeOptions}
+                value={selectedTaxOption}
+                onChange={(e) => setSelectedTaxOption(e.target.value)}
+              />
+              {selectedTaxOption === "CUSTOM" && (
+                <div className="flex items-center gap-2 animate-in fade-in slide-in-from-top-1">
+                  <Input
+                    label=""
+                    placeholder="Rate %"
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={customRate}
+                    onChange={(e) => setCustomRate(e.target.value)}
+                    className="h-10"
+                  />
+                  <span className="text-sm font-medium pt-2">%</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Preview */}
+          <div className="p-4 rounded bg-light-bg dark:bg-dark-bg border border-light-border dark:border-dark-border">
+            <div className="flex justify-between text-sm">
+              <span>Taxable</span>
+              <span>{formatCurrency(form.taxable_amount)}</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span>Tax</span>
+              <span>{formatCurrency(taxAmount)}</span>
+            </div>
+            <div className="flex justify-between font-medium pt-2 border-t">
+              <span>Total</span>
+              <span>{formatCurrency(totalAmount)}</span>
+            </div>
+          </div>
+
+          <div className="flex gap-3">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => navigate("/records")}
+              className="flex-1"
+            >
+              Cancel
+            </Button>
+
+            <Button
+              type="submit"
+              variant="primary"
+              isLoading={isLoading}
+              className="flex-1"
+            >
+              Add Record
+            </Button>
+          </div>
+        </form>
+      </Card>
     </div>
   )
 }

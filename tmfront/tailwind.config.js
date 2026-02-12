@@ -8,8 +8,6 @@ export default {
   theme: {
     extend: {
       colors: {
-        background: '#060606',
-        highlight: '#fe6162',
         // Primary - Vibrant Red/Orange #C72403
         primary: {
           50: '#fef3f2',
@@ -51,22 +49,6 @@ export default {
           800: '#971b3f',
           900: '#7e1b38',
           950: '#320d1F',
-        },
-        // Text colors
-        text: {
-          primary: '#f5f0f2',
-          secondary: '#9a8f94',
-          muted: '#6b5f64',
-        },
-        // Surface colors for glassmorphism
-        surface: {
-          DEFAULT: 'rgba(255, 255, 255, 0.03)',
-          hover: 'rgba(255, 255, 255, 0.08)',
-          active: 'rgba(255, 255, 255, 0.12)',
-        },
-        border: {
-          DEFAULT: 'rgba(255, 255, 255, 0.08)',
-          hover: 'rgba(255, 255, 255, 0.15)',
         },
         // Dark mode colors based on burgundy
         dark: {

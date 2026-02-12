@@ -1,59 +1,116 @@
 import React from 'react';
+import { motion } from 'framer-motion';
+import { cn } from '../../utils/format';
 
 interface CardProps {
   children: React.ReactNode;
   className?: string;
-  variant?: 'default' | 'hover' | 'solid';
+  animate?: boolean;
+  delay?: number;
+  hover?: boolean;
   onClick?: () => void;
 }
 
-const Card: React.FC<CardProps> = ({
+export const Card: React.FC<CardProps> = ({
   children,
-  className = '',
-  variant = 'default',
-  onClick
+  className,
+  animate = true,
+  delay = 0,
+  hover = false,
+  onClick,
 }) => {
-  const baseStyles = 'rounded-2xl transition-all duration-300 border backdrop-blur-md';
+  const baseClasses = cn(
+    'bg-light-card dark:bg-dark-card',
+    'border border-light-border dark:border-dark-border',
+    'rounded-2xl p-6',
+    'transition-all duration-300',
+    hover && 'cursor-pointer hover:border-primary-500/30 hover:-translate-y-1 hover:shadow-lg hover:shadow-primary-600/10',
+    className
+  );
 
-  const variants = {
-    // Standard glass effect: barely visible background, subtle border
-    default: 'bg-surface border-border',
-    // Interactive card: glows and lifts on hover
-    hover: 'bg-surface border-border cursor-pointer hover:bg-surface-hover hover:border-border-hover hover:-translate-y-1 hover:shadow-xl hover:shadow-highlight/5',
-    // More opaque for heavy content
-    solid: 'bg-[#111] border-white/5',
-  };
+  if (animate) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay, ease: 'easeOut' }}
+        whileHover={hover ? { scale: 1.02 } : {}}
+        className={baseClasses}
+        onClick={onClick}
+      >
+        {children}
+      </motion.div>
+    );
+  }
 
   return (
-    <div
-      className={`${baseStyles} ${variants[variant]} ${className}`}
-      onClick={onClick}
-    >
+    <div className={baseClasses} onClick={onClick}>
       {children}
     </div>
   );
 };
 
-const StatCard = ({ title, value, icon, color }: { title: string; value: string; icon: React.ReactNode; color: 'primary' | 'secondary' | 'success' | 'danger' | 'warning' }) => {
-  const colors = {
-    primary: 'text-highlight bg-highlight/10 border-highlight/20',
-    secondary: 'text-blue-400 bg-blue-400/10 border-blue-400/20',
-    success: 'text-emerald-400 bg-emerald-400/10 border-emerald-400/20',
-    danger: 'text-red-400 bg-red-400/10 border-red-400/20',
-    warning: 'text-amber-400 bg-amber-400/10 border-amber-400/20',
+// Stat Card variant
+interface StatCardProps {
+  title: string;
+  value: string | number;
+  icon: React.ReactNode;
+  trend?: { value: number; isPositive: boolean };
+  color?: 'primary' | 'secondary' | 'success' | 'warning' | 'danger';
+  delay?: number;
+}
+
+export const StatCard: React.FC<StatCardProps> = ({
+  title,
+  value,
+  icon,
+  trend,
+  color = 'primary',
+  delay = 0,
+}) => {
+  const colorClasses = {
+    primary: 'text-primary-600 dark:text-primary-500 bg-primary-600/10',
+    secondary: 'text-secondary-600 dark:text-secondary-400 bg-secondary-500/10',
+    success: 'text-green-600 dark:text-green-400 bg-green-500/10',
+    warning: 'text-amber-600 dark:text-amber-400 bg-amber-500/10',
+    danger: 'text-red-600 dark:text-red-400 bg-red-500/10',
   };
 
   return (
-    <Card className="p-6 flex items-center gap-4 hover:bg-white/[0.03] transition-colors group">
-      <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${colors[color]} group-hover:scale-110 transition-transform`}>
-        {icon}
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, delay }}
+      className="relative overflow-hidden bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-2xl p-6"
+    >
+      {/* Background decoration */}
+      <div className={cn(
+        'absolute -top-8 -right-8 w-32 h-32 rounded-full opacity-50',
+        colorClasses[color].split(' ')[1]
+      )} />
+      
+      <div className="relative z-10">
+        <div className="flex items-start justify-between mb-4">
+          <div className={cn('p-3 rounded-xl', colorClasses[color])}>
+            {icon}
+          </div>
+          {trend && (
+            <span className={cn(
+              'text-xs font-medium px-2 py-1 rounded-full',
+              trend.isPositive ? 'text-green-600 bg-green-500/10' : 'text-red-600 bg-red-500/10'
+            )}>
+              {trend.isPositive ? '+' : ''}{trend.value}%
+            </span>
+          )}
+        </div>
+        
+        <p className="text-sm text-light-muted dark:text-dark-muted mb-1">
+          {title}
+        </p>
+        <p className={cn('text-2xl lg:text-3xl font-bold', colorClasses[color].split(' ')[0])}>
+          {value}
+        </p>
       </div>
-      <div>
-        <p className="text-sm text-text-muted mb-1">{title}</p>
-        <p className="text-2xl font-bold text-text-primary">{value}</p>
-      </div>
-    </Card>
+    </motion.div>
   );
 };
-
-export { Card, StatCard };
