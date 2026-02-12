@@ -11,9 +11,6 @@ import {
   Sparkles,
   Shield,
   Zap,
-  Mail,
-  MessageSquare,
-  Phone,
   ArrowUpRight
 } from 'lucide-react';
 import {
@@ -26,8 +23,8 @@ import {
   ResponsiveContainer
 } from 'recharts';
 import Navbar from '../components/ui/Navbar';
-import Button from '../components/ui/Button';
-import Card from '../components/ui/Card';
+import { Button } from '../components/ui/Button';
+import { Card } from '../components/ui/Card';
 
 const features = [
   {
