@@ -109,17 +109,18 @@ def insert_csv(
 @router.post("/invoice/upload")
 async def upload_invoices(
     files: list[UploadFile] = File(...),
+    db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """Upload and process invoice images using OCR"""
+    """Upload and process invoice images using OCR and insert records"""
     from app.services.ocr_service import extract_text_from_image
     from PIL import Image
-    import re
     
     if not files:
         raise HTTPException(status_code=400, detail="No files uploaded")
     
     results = []
+    records_to_insert = []
     
     for file in files:
         # Validate file type
@@ -127,7 +128,7 @@ async def upload_invoices(
             results.append({
                 "filename": file.filename,
                 "status": "error",
-                "error": "Only image files are supported"
+                "message": "Only image files are supported"
             })
             continue
         
@@ -139,28 +140,58 @@ async def upload_invoices(
             # Extract text using OCR
             text = extract_text_from_image(image)
             
-            # Basic parsing of invoice data
-            # This is a simple implementation - you can enhance this based on your invoice format
-            invoice_data = {
-                "filename": file.filename,
-                "status": "success",
-                "extracted_text": text,
-                "parsed_data": parse_invoice_text(text)
-            }
+            # Parse invoice data
+            parsed_data = parse_invoice_text(text)
             
-            results.append(invoice_data)
-            
+            if parsed_data["amount"] and parsed_data["date"]:
+                 # Create TaxRecordCreate object
+                 try:
+                    record_create = TaxRecordCreate(
+                        source=f"invoice_upload_{file.filename}",
+                        date=datetime.strptime(parsed_data["date"], "%Y-%m-%d").date(),
+                        description=parsed_data["description"] or f"Invoice {file.filename}",
+                        category=parsed_data["category"],
+                        transaction_type="expense", # Invoices are usually expenses
+                        taxable_amount=parsed_data["amount"],
+                        tax_type="NONE",
+                        tax_rate=0.0
+                    )
+                    records_to_insert.append(record_create)
+                    results.append({
+                        "filename": file.filename,
+                        "status": "success",
+                        "parsed_data": parsed_data
+                    })
+                 except Exception as e:
+                     results.append({
+                        "filename": file.filename,
+                        "status": "error",
+                        "message": f"Validation Error: {str(e)}"
+                    })
+            else:
+                 results.append({
+                    "filename": file.filename,
+                    "status": "warning",
+                    "message": "Could not extract sufficient data (Date/Amount)",
+                    "extracted_text_preview": text[:100]
+                })
+
         except Exception as e:
             results.append({
                 "filename": file.filename,
                 "status": "error",
-                "error": str(e)
+                "message": str(e)
             })
     
+    # Insert valid records
+    inserted_count = 0
+    if records_to_insert:
+        inserted_count = parse_csv_rows(db, current_user.id, records_to_insert)
+
     return {
         "total_files": len(files),
-        "successful": len([r for r in results if r["status"] == "success"]),
-        "failed": len([r for r in results if r["status"] == "error"]),
+        "successful_parses": len([r for r in results if r["status"] == "success"]),
+        "inserted_records": inserted_count,
         "results": results
     }
 
@@ -168,47 +199,79 @@ async def upload_invoices(
 def parse_invoice_text(text: str) -> dict:
     """
     Parse invoice text to extract structured data
-    This is a basic implementation - enhance based on your invoice format
     """
     import re
     from datetime import datetime
     
     parsed = {
-        "date": None,
+        "date": None, # Format YYYY-MM-DD for consistency
         "description": None,
         "amount": None,
-        "category": "Misc"
+        "category": "Office Expense" # Default
     }
     
     # Try to find date (various formats)
+    # Return as YYYY-MM-DD
     date_patterns = [
-        r'\d{1,2}[/-]\d{1,2}[/-]\d{2,4}',  # DD/MM/YYYY or MM/DD/YYYY
-        r'\d{4}[/-]\d{1,2}[/-]\d{1,2}',     # YYYY/MM/DD
+        (r'\b(\d{4})[/-](\d{1,2})[/-](\d{1,2})\b', '%Y-%m-%d'), # YYYY-MM-DD
+        (r'\b(\d{1,2})[/-](\d{1,2})[/-](\d{4})\b', '%d-%m-%Y'), # DD-MM-YYYY
+        (r'\b(\d{1,2})[/-](\d{1,2})[/-](\d{2})\b', '%d-%m-%y'), # DD-MM-YY
     ]
     
-    for pattern in date_patterns:
-        date_match = re.search(pattern, text)
-        if date_match:
-            parsed["date"] = date_match.group()
-            break
+    for pattern, fmt in date_patterns:
+        match = re.search(pattern, text)
+        if match:
+             try:
+                dt = datetime.strptime(match.group(), fmt) # Parse raw match
+                # Only if match.group() matches fmt. Regex might catch '2023-55-12' which is invalid
+                # But strptime handles validity.
+                # Re-construct from groups to be safe if regex is loose?
+                # Actually, best to just try parsing the match string
+                # Wait, regex might match 12/12/2023 but datetime expects specific separators
+                # Simple approach: cleanup separators
+                date_str = match.group().replace('/', '-')
+                if fmt == '%d-%m-%Y':
+                    dt = datetime.strptime(date_str, '%d-%m-%Y')
+                elif fmt == '%d-%m-%y':
+                     dt = datetime.strptime(date_str, '%d-%m-%y')
+                else:
+                    dt = datetime.strptime(date_str, '%Y-%m-%d')
+                
+                parsed["date"] = dt.strftime("%Y-%m-%d")
+                break
+             except ValueError:
+                 continue
     
+    # If no date found, default to today? Or leave None (fail)
+    if not parsed["date"]:
+        parsed["date"] = datetime.today().strftime("%Y-%m-%d") # Fallback to today
+
     # Try to find amount (currency symbols + numbers)
+    # Look for largest number that looks like a total?
     amount_patterns = [
-        r'(?:Rs\.?|₹)\s*(\d+(?:,\d+)*(?:\.\d{2})?)',  # Indian Rupee
-        r'(?:\$|USD)\s*(\d+(?:,\d+)*(?:\.\d{2})?)',    # USD
-        r'(?:Total|Amount)[:\s]*(\d+(?:,\d+)*(?:\.\d{2})?)',  # Generic total
+        r'(?:total|amount|due|payable)[\s\w]*[:=]?\s*[\$₹Rs\.]?\s*(\d+(?:,\d+)*(?:\.\d{2})?)',
+        r'[\$₹Rs]\.?\s*(\d+(?:,\d+)*(?:\.\d{2})?)'
     ]
     
+    found_amounts = []
     for pattern in amount_patterns:
-        amount_match = re.search(pattern, text, re.IGNORECASE)
-        if amount_match:
-            amount_str = amount_match.group(1).replace(',', '')
-            parsed["amount"] = float(amount_str)
-            break
+        matches = re.finditer(pattern, text, re.IGNORECASE)
+        for m in matches:
+             try:
+                val = float(m.group(1).replace(',', ''))
+                found_amounts.append(val)
+             except:
+                 pass
     
-    # Extract first meaningful line as description
+    if found_amounts:
+        parsed["amount"] = max(found_amounts) # Assume largest amount found is Total
+    
+    # Description
     lines = [line.strip() for line in text.split('\n') if line.strip()]
-    if lines:
-        parsed["description"] = lines[0][:100]  # First line, max 100 chars
-    
+    # Skip lines that look like dates or amounts only
+    for line in lines:
+        if len(line) > 5 and not re.search(r'^[\d\W]+$', line):
+            parsed["description"] = line[:100]
+            break
+            
     return parsed

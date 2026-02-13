@@ -1,6 +1,6 @@
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI
-from app.api import tax_records, reports, auth, uploads, dashboard, tax_summary
+from app.api import tax_records, reports, auth, uploads, dashboard, tax_summary, erl
 
 
 app = FastAPI(title="Taxmate v0")
@@ -9,8 +9,6 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:5173",  # Vite dev server
         "http://127.0.0.1:5173",
-        "https://taxmate-jhq.pages.dev",  # Cloudflare Pages production
-        # Add your custom domain here when you set it up
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -22,6 +20,7 @@ app.include_router(reports.router)
 app.include_router(auth.router)
 app.include_router(dashboard.router)
 app.include_router(tax_summary.router)
+app.include_router(erl.router)
 
 @app.get("/")
 def root():

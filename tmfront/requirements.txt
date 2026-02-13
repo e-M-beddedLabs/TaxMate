@@ -2,7 +2,7 @@ fastapi
 uvicorn
 sqlalchemy
 psycopg2-binary
-pydantic
+pydantic == 1.10.13
 pytesseract
 pillow
 python-jose
@@ -10,4 +10,3 @@ passlib[bcrypt]==1.7.4
 email-validator
 python-multipart
 openpyxl
-bcrypt

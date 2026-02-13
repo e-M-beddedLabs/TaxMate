@@ -1,24 +1,22 @@
 import React, { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  LayoutDashboard, 
-  FileText, 
-  Upload, 
+import {
+  LayoutDashboard,
+  FileText,
+  Upload,
   BarChart3,
+  TrendingUp,
   X
 } from 'lucide-react';
-import { cn } from '../../utils/format';
 
-interface SidebarProps {
-  isOpen: boolean;
-  onClose: () => void;
-}
+// ... (existing imports)
 
 const navItems = [
   { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { path: '/records', label: 'Records', icon: FileText },
   { path: '/upload', label: 'Upload', icon: Upload },
+  { path: '/erl', label: 'Economic Reality', icon: TrendingUp },
   { path: '/reports', label: 'Reports', icon: BarChart3 },
 ];
 
@@ -27,9 +25,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
 
   const NavItem = ({ item }: { item: typeof navItems[0] }) => {
-    const isActive = location.pathname === item.path || 
+    const isActive = location.pathname === item.path ||
       (item.path === '/records' && location.pathname.startsWith('/records'));
-    
+
     return (
       <NavLink
         to={item.path}
@@ -38,13 +36,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         onMouseLeave={() => setHoveredItem(null)}
         className={cn(
           'relative flex items-center justify-center p-3 rounded-xl transition-colors duration-200',
-          isActive 
-            ? 'bg-primary-600/10 text-primary-600 dark:text-primary-500' 
+          isActive
+            ? 'bg-primary-600/10 text-primary-600 dark:text-primary-500'
             : 'text-light-muted dark:text-dark-muted hover:bg-light-hover dark:hover:bg-dark-hover hover:text-light-text dark:hover:text-dark-text'
         )}
       >
         <item.icon size={22} />
-        
+
         {/* Tooltip */}
         {hoveredItem === item.path && (
           <div className="absolute left-full ml-3 px-3 py-2 bg-dark-card text-dark-text text-sm rounded-lg shadow-xl whitespace-nowrap z-50">
@@ -115,9 +113,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                 {/* Navigation */}
                 <nav className="flex-1 px-3 py-4 space-y-1">
                   {navItems.map((item) => {
-                    const isActive = location.pathname === item.path || 
+                    const isActive = location.pathname === item.path ||
                       (item.path === '/records' && location.pathname.startsWith('/records'));
-                    
+
                     return (
                       <NavLink
                         key={item.path}
@@ -125,8 +123,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                         onClick={onClose}
                         className={cn(
                           'flex items-center gap-3 px-4 py-3 rounded-xl transition-colors duration-200',
-                          isActive 
-                            ? 'bg-primary-600/10 text-primary-600 dark:text-primary-500 font-medium' 
+                          isActive
+                            ? 'bg-primary-600/10 text-primary-600 dark:text-primary-500 font-medium'
                             : 'text-light-muted dark:text-dark-muted hover:bg-light-hover dark:hover:bg-dark-hover hover:text-light-text dark:hover:text-dark-text'
                         )}
                       >
