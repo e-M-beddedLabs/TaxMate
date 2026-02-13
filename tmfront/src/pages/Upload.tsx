@@ -3,15 +3,13 @@ import { motion } from "framer-motion"
 import {
   Upload as UploadIcon,
   FileText,
-  AlertCircle,
   CheckCircle,
   X,
   Loader2,
-  Image as ImageIcon,
 } from "lucide-react"
 import { Button, Card } from "../components/ui"
 import { previewCsv, insertCsv, uploadInvoices } from "../services/uploads"
-import { formatCurrency, cn } from "../utils/format"
+import { cn } from "../utils/format"
 import type { CSVUploadPreview, CSVImportResult } from "../types"
 
 type UploadState = "idle" | "preview" | "importing" | "complete" | "invoice-complete"

@@ -1,7 +1,7 @@
 import { api } from "./client"
 
 export interface CategoryExpense {
-    category: str
+    category: string
     amount: number
     percentage: number
 }
@@ -19,6 +19,5 @@ export interface ERLInsights {
 }
 
 export const getErlInsights = async (): Promise<ERLInsights> => {
-    const response = await api.get<ERLInsights>("/erl/insights")
-    return response.data
+    return api<ERLInsights>("/erl/insights")
 }

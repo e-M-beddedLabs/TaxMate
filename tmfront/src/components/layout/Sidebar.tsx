@@ -9,8 +9,12 @@ import {
   TrendingUp,
   X
 } from 'lucide-react';
+import { cn } from '../../utils/format';
 
-// ... (existing imports)
+interface SidebarProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
 
 const navItems = [
   { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },

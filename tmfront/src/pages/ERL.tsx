@@ -1,14 +1,12 @@
 import React, { useEffect, useState } from "react"
-import { motion } from "framer-motion"
 import {
     TrendingUp,
     TrendingDown,
     DollarSign,
     PieChart,
-    Activity,
-    AlertCircle
+    Activity
 } from "lucide-react"
-import { Card, Button } from "../components/ui"
+import { Card } from "../components/ui"
 import { getErlInsights, type ERLInsights } from "../services/ErlService"
 import { formatCurrency, cn } from "../utils/format"
 
@@ -173,7 +171,7 @@ export const ERL: React.FC = () => {
     )
 }
 
-const MetricCard = ({ title, value, icon: Icon, trend, color }: any) => (
+const MetricCard = ({ title, value, icon: Icon, color }: any) => (
     <Card>
         <div className="flex justify-between items-start mb-2">
             <div className="p-2 rounded-lg bg-light-bg dark:bg-dark-bg">
