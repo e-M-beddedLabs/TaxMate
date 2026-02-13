@@ -90,13 +90,18 @@ def run_csv_import_background(user_id: int, records: list[TaxRecordCreate]):
     """
     Background task to run CSV import with its own DB session.
     """
+    print(f"DEBUG: Starting background task for user {user_id} with {len(records)} records")
     db = SessionLocal()
     try:
-        parse_csv_rows(db, user_id, records)
+        count = parse_csv_rows(db, user_id, records)
+        print(f"DEBUG: Background task finished. Inserted {count} records.")
     except Exception as e:
-        print(f"Error in background CSV import: {e}")
+        print(f"DEBUG: Error in background CSV import: {e}")
+        import traceback
+        traceback.print_exc()
     finally:
         db.close()
+        print("DEBUG: Database session closed.")
 
 
 @router.post("/csv/insert")
