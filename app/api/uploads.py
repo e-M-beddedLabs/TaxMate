@@ -86,16 +86,27 @@ def insert_csv(
     return {"inserted": inserted}
     '''
 
+def run_csv_import_background(user_id: int, records: list[TaxRecordCreate]):
+    """
+    Background task to run CSV import with its own DB session.
+    """
+    db = SessionLocal()
+    try:
+        parse_csv_rows(db, user_id, records)
+    except Exception as e:
+        print(f"Error in background CSV import: {e}")
+    finally:
+        db.close()
+
+
 @router.post("/csv/insert")
 def insert_csv(
     records: list[TaxRecordCreate],
     background_tasks: BackgroundTasks,
-    db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
     background_tasks.add_task(
-        parse_csv_rows,
-        db,
+        run_csv_import_background,
         current_user.id,
         records,
     )
