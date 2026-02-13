@@ -42,6 +42,7 @@ def parse_csv_rows(
             transaction_type=row.transaction_type,
             taxable_amount=row.taxable_amount,
             tax_type=row.tax_type,
+            tax_rate=row.tax_rate or 0.0,
             tax_amount=tax_amount,
             total_amount=total_amount,
             confidence_score=1.0,
