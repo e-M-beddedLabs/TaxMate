@@ -1,4 +1,4 @@
-const BASE_URL = import.meta.env.VITE_API_URL || "https://taxmate-backend-2uv6.onrender.com"
+const BASE_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000"
 
 export const apiClient = async (
   endpoint: string,
