@@ -3,8 +3,19 @@ from sqlalchemy import func
 from app.models.tax_record import TaxRecord
 from app.schemas.erl import ERLInsights, CategoryExpense
 from typing import List
+import time
+
+# Simple in-memory cache: {user_id: (timestamp, data)}
+_erl_cache = {}
+CACHE_TTL = 300  # 5 minutes
 
 def calculate_economic_metrics(db: Session, user_id: int) -> ERLInsights:
+    # Check cache
+    if user_id in _erl_cache:
+        timestamp, data = _erl_cache[user_id]
+        if time.time() - timestamp < CACHE_TTL:
+            return data
+
     # 1. Fetch all records for the user
     records = db.query(TaxRecord).filter(TaxRecord.user_id == user_id).all()
     
@@ -77,7 +88,7 @@ def calculate_economic_metrics(db: Session, user_id: int) -> ERLInsights:
     elif monthly_burn_rate < avg_income * 1.1: # Slightly over
         score += 10
 
-    return ERLInsights(
+    insights = ERLInsights(
         total_income=total_income,
         total_expenses=total_expenses,
         net_savings=net_savings,
@@ -88,3 +99,7 @@ def calculate_economic_metrics(db: Session, user_id: int) -> ERLInsights:
         monthly_burn_rate=round(monthly_burn_rate, 2),
         financial_health_score=min(100, max(0, score))
     )
+    
+    # Update cache
+    _erl_cache[user_id] = (time.time(), insights)
+    return insights

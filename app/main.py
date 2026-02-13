@@ -1,4 +1,5 @@
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 from fastapi import FastAPI
 from app.api import tax_records, reports, auth, uploads, dashboard, tax_summary, erl
 
@@ -17,6 +18,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.add_middleware(GZipMiddleware, minimum_size=1000)
 app.include_router(uploads.router)
 app.include_router(tax_records.router)
 app.include_router(reports.router)

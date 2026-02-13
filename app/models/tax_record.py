@@ -11,7 +11,7 @@ class TaxRecord(Base):
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
 
     source = Column(String, nullable=False)
-    date = Column(Date, nullable=False)
+    date = Column(Date, nullable=False, index=True)
     description = Column(String, nullable=False)
     category = Column(String, nullable=False)
 

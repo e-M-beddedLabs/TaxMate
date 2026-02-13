@@ -138,7 +138,13 @@ async def upload_invoices(
             image = Image.open(io.BytesIO(contents))
             
             # Extract text using OCR
-            text = extract_text_from_image(image)
+            # Extract text using OCR in a thread pool
+            import asyncio
+            from concurrent.futures import ThreadPoolExecutor
+            
+            loop = asyncio.get_event_loop()
+            with ThreadPoolExecutor() as pool:
+                text = await loop.run_in_executor(pool, extract_text_from_image, image)
             
             # Parse invoice data
             parsed_data = parse_invoice_text(text)
