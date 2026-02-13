@@ -40,19 +40,37 @@ def preview_csv(
     records = []
     errors = []
 
+    # Valid formats for date parsing
+    date_formats = ["%Y-%m-%d", "%d-%m-%Y", "%m/%d/%Y", "%d/%m/%Y"]
+
     for idx, row in enumerate(reader, start=1):
         try:
+            # Try parsing date with multiple formats
+            date_obj = None
+            date_str = row["date"].strip()
+            for fmt in date_formats:
+                try:
+                    date_obj = datetime.strptime(date_str, fmt).date()
+                    break
+                except ValueError:
+                    continue
+            
+            if not date_obj:
+                raise ValueError(f"Invalid date format: {date_str}. Expected YYYY-MM-DD or DD-MM-YYYY")
+
             record = TaxRecordCreate(
                 source="csv",
-                date=datetime.strptime(row["date"], "%Y-%m-%d").date(),
+                date=date_obj,
                 description=row["description"],
                 category=row["category"],
                 transaction_type=row["transaction_type"],
                 taxable_amount=float(row["taxable_amount"]),
                 tax_type=row.get("tax_type", "NONE"),
+                tax_rate=float(row.get("tax_rate", 0.0)) if row.get("tax_rate") else None
             )
             records.append(record)
         except Exception as e:
+            print(f"DEBUG: Row {idx} error: {e}")
             errors.append({"row": idx, "error": str(e)})
 
     parsed_rows = len(records) + len(errors)
@@ -64,9 +82,10 @@ def preview_csv(
         )
 
     if parsed_rows > 0 and (len(errors) / parsed_rows) > MAX_ERROR_RATIO:
+        print(f"DEBUG: Too many errors. First error: {errors[0] if errors else 'Unknown'}")
         raise HTTPException(
             status_code=400,
-            detail="Too many invalid rows in CSV",
+            detail=f"Too many invalid rows. First error: {errors[0]['error'] if errors else 'Unknown'}",
         )
 
     return {
