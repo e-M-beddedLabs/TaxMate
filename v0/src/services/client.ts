@@ -18,13 +18,19 @@ export async function api<T = any>(
 ): Promise<T> {
   const token = getToken()
 
+  const headers: HeadersInit = {
+    "Content-Type": "application/json",
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...options.headers,
+  }
+
+  if (options.body instanceof FormData) {
+    delete (headers as any)["Content-Type"]
+  }
+
   const res = await fetch(`${API_BASE}${path}`, {
     ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...options.headers,
-    },
+    headers,
   })
 
   if (!res.ok) {

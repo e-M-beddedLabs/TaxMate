@@ -7,19 +7,21 @@ import {
   CheckCircle,
   X,
   Loader2,
+  Image as ImageIcon,
 } from "lucide-react"
 import { Button, Card } from "../components/ui"
-import { previewCsv, insertCsv } from "../services/uploads"
+import { previewCsv, insertCsv, uploadInvoices } from "../services/uploads"
 import { formatCurrency, cn } from "../utils/format"
 import type { CSVUploadPreview, CSVImportResult } from "../types"
 
-type UploadState = "idle" | "preview" | "importing" | "complete"
+type UploadState = "idle" | "preview" | "importing" | "complete" | "invoice-complete"
 
 export const Upload: React.FC = () => {
   const [state, setState] = useState<UploadState>("idle")
   const [fileName, setFileName] = useState("")
   const [preview, setPreview] = useState<CSVUploadPreview | null>(null)
   const [importResult, setImportResult] = useState<CSVImportResult | null>(null)
+  const [invoiceResult, setInvoiceResult] = useState<any | null>(null)
   const [dragActive, setDragActive] = useState(false)
 
   const handleDrag = useCallback((e: React.DragEvent) => {
@@ -40,13 +42,18 @@ export const Upload: React.FC = () => {
   }
 
   const handleFile = async (file: File) => {
-    if (!file.name.endsWith(".csv")) {
-      alert("Please upload a CSV file")
+    setFileName(file.name)
+    setState("idle")
+
+    if (file.type.startsWith("image/")) {
+      handleInvoiceUpload(file)
       return
     }
 
-    setFileName(file.name)
-    setState("idle")
+    if (!file.name.endsWith(".csv")) {
+      alert("Please upload a CSV file or an Invoice Image")
+      return
+    }
 
     try {
       const result = await previewCsv(file)
@@ -54,6 +61,18 @@ export const Upload: React.FC = () => {
       setState("preview")
     } catch (err) {
       alert("Failed to preview CSV")
+      setState("idle")
+    }
+  }
+
+  const handleInvoiceUpload = async (file: File) => {
+    setState("importing")
+    try {
+      const result = await uploadInvoices([file])
+      setInvoiceResult(result)
+      setState("invoice-complete")
+    } catch (err) {
+      alert("Invoice upload failed")
       setState("idle")
     }
   }
@@ -78,14 +97,15 @@ export const Upload: React.FC = () => {
     setFileName("")
     setPreview(null)
     setImportResult(null)
+    setInvoiceResult(null)
   }
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Upload CSV</h1>
+        <h1 className="text-2xl font-bold">Upload Records</h1>
         <p className="text-light-muted dark:text-dark-muted">
-          Bulk import records from a CSV file
+          Import from CSV or Upload Invoice Images (OCR)
         </p>
       </div>
 
@@ -108,15 +128,15 @@ export const Upload: React.FC = () => {
                 <UploadIcon size={32} />
               </div>
               <h3 className="text-lg font-medium mb-2">
-                Drop your CSV file here
+                Drop CSV or Invoice Image here
               </h3>
               <p className="text-sm text-light-muted mb-4">
-                or click to browse
+                Supports .csv, .jpg, .png, .jpeg
               </p>
               <label>
                 <input
                   type="file"
-                  accept=".csv"
+                  accept=".csv,image/*"
                   onChange={handleFileInput}
                   className="hidden"
                 />
@@ -186,7 +206,7 @@ export const Upload: React.FC = () => {
       {state === "importing" && (
         <Card className="text-center py-12">
           <Loader2 size={48} className="mx-auto animate-spin" />
-          <p className="mt-4">Importing records…</p>
+          <p className="mt-4">Processing...</p>
         </Card>
       )}
 
@@ -195,7 +215,7 @@ export const Upload: React.FC = () => {
           <CheckCircle size={48} className="mx-auto text-green-500" />
           <h3 className="text-xl font-bold mt-4">Import Complete</h3>
           <p className="text-light-muted mt-2">
-            Imported {importResult.imported_count} records
+            Imported {importResult.imported_count} records from CSV
           </p>
           <div className="mt-6 flex justify-center gap-3">
             <Button variant="secondary" onClick={handleReset}>
@@ -207,6 +227,42 @@ export const Upload: React.FC = () => {
             >
               View Records
             </Button>
+          </div>
+        </Card>
+      )}
+
+      {state === "invoice-complete" && invoiceResult && (
+        <Card className="text-center py-12">
+          <CheckCircle size={48} className="mx-auto text-green-500" />
+          <h3 className="text-xl font-bold mt-4">Invoice Processed</h3>
+          <p className="text-light-muted mt-2">
+            Scanned {invoiceResult.total_files} files.
+            Successfully extracted {invoiceResult.successful_parses}.
+          </p>
+          <p className="text-primary-600 font-medium mt-1">
+            Inserted {invoiceResult.inserted_records} records.
+          </p>
+
+          <div className="mt-6 flex justify-center gap-3">
+            <Button variant="secondary" onClick={handleReset}>
+              Upload Another
+            </Button>
+            <Button
+              variant="primary"
+              onClick={() => (location.href = "/records")}
+            >
+              View Records
+            </Button>
+          </div>
+
+          {/* Debug/Details view could go here */}
+          <div className="mt-8 text-left max-h-60 overflow-y-auto border-t border-light-border dark:border-dark-border pt-4">
+            <h4 className="text-sm font-medium mb-2">Details:</h4>
+            {invoiceResult.results.map((r: any, i: number) => (
+              <div key={i} className="text-xs text-light-muted mb-1">
+                {r.filename}: {r.status} {r.status === 'success' ? `(Amount: ${r.parsed_data.amount})` : `- ${r.message || r.error}`}
+              </div>
+            ))}
           </div>
         </Card>
       )}

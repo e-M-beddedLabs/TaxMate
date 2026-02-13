@@ -1,6 +1,6 @@
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI
-from app.api import tax_records, reports, auth, uploads, dashboard, tax_summary
+from app.api import tax_records, reports, auth, uploads, dashboard, tax_summary, erl
 
 
 app = FastAPI(title="Taxmate v0")
@@ -20,6 +20,7 @@ app.include_router(reports.router)
 app.include_router(auth.router)
 app.include_router(dashboard.router)
 app.include_router(tax_summary.router)
+app.include_router(erl.router)
 
 @app.get("/")
 def root():

@@ -1,15 +1,16 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthLayout, ProtectedRoute } from './components/layout';
-import { 
-  Landing, 
-  Login, 
-  Register, 
-  Dashboard, 
-  Records, 
-  AddRecord, 
-  Upload, 
-  Reports 
+import {
+  Landing,
+  Login,
+  Register,
+  Dashboard,
+  Records,
+  AddRecord,
+  Upload,
+  Reports,
+  ERL
 } from './pages';
 import { useTheme } from './hooks/useTheme';
 
@@ -37,6 +38,7 @@ const App: React.FC = () => {
           <Route path="/records" element={<Records />} />
           <Route path="/records/add" element={<AddRecord />} />
           <Route path="/upload" element={<Upload />} />
+          <Route path="/erl" element={<ERL />} />
           <Route path="/reports" element={<Reports />} />
         </Route>
       </Routes>
