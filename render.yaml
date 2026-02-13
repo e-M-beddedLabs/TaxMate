@@ -3,7 +3,7 @@ services:
     name: taxmate-backend
     env: docker
     plan: free
-    region: oregon
+    region: singapore
     envVars:
       - key: PORT
         value: 10000
