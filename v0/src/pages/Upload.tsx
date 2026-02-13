@@ -92,14 +92,6 @@ export const Upload: React.FC = () => {
     setState("importing")
 
     try {
-      try {
-        const result = await insertCsv(preview.valid_rows)
-        setImportResult(result)
-        setState("complete")
-      } catch (err) {
-        alert("CSV import failed")
-        setState("preview")
-      }
     }
 
   const handleReset = () => {
