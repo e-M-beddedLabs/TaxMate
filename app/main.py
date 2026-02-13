@@ -9,7 +9,9 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:5173",  # Vite dev server
         "http://127.0.0.1:5173",
-        "https://taxmate-jhq.pages.dev", # Cloudflare Pages deployment
+        "https://taxmate-jhq.pages.dev",
+        "https://www.taxmate-jhq.pages.dev",
+        "http://taxmate-jhq.pages.dev",
     ],
     allow_credentials=True,
     allow_methods=["*"],
