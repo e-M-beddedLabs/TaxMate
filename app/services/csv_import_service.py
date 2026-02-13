@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from app.schemas.tax_record import TaxRecordCreate
 from app.models.tax_record import TaxRecord
-from app.services.tax_calculator import compute_tax_for_record
+
 
 
 def parse_csv_rows(
@@ -31,7 +31,17 @@ def parse_csv_rows(
 
         seen.add(fingerprint)
 
-        tax_amount, total_amount = compute_tax_for_record(row)
+        # Calculate tax locally since row is Pydantic model, not SQLAlchemy
+        tax_rate = row.tax_rate
+        if tax_rate is None:
+             if row.tax_type == "GST":
+                 tax_rate = 18.0
+             else:
+                 tax_rate = 0.0
+        
+        taxable = row.taxable_amount or 0.0
+        tax_amount = round((taxable * tax_rate) / 100, 2)
+        total_amount = round(taxable + tax_amount, 2)
 
         db_record = TaxRecord(
             user_id=user_id,
@@ -42,7 +52,7 @@ def parse_csv_rows(
             transaction_type=row.transaction_type,
             taxable_amount=row.taxable_amount,
             tax_type=row.tax_type,
-            tax_rate=row.tax_rate or 0.0,
+            tax_rate=tax_rate,
             tax_amount=tax_amount,
             total_amount=total_amount,
             confidence_score=1.0,
