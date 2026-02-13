@@ -38,11 +38,7 @@ class TaxRecordBase(BaseModel):
             raise ValueError("taxable_amount must be > 0")
         return v
 
-    @validator("date")
-    def validate_date(cls, v):
-        if v > date.today():
-            raise ValueError("date cannot be in the future")
-        return v
+
 
 
 class TaxRecordCreate(TaxRecordBase):
