@@ -71,9 +71,8 @@ def preview_csv(
 
     return {
         "parsed_rows": parsed_rows,
-        "error_rows": len(errors),
-        "records": records,
-        "errors": errors,
+        "valid_rows": records,
+        "error_rows": errors,
     }
 
 '''
