@@ -21,6 +21,7 @@ export const Upload: React.FC = () => {
   const [importResult, setImportResult] = useState<CSVImportResult | null>(null)
   const [invoiceResult, setInvoiceResult] = useState<any | null>(null)
   const [dragActive, setDragActive] = useState(false)
+  const fileInputRef = React.useRef<HTMLInputElement>(null)
 
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault()
@@ -36,6 +37,7 @@ export const Upload: React.FC = () => {
   }, [])
 
   const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    console.log("File input changed:", e.target.files)
     if (e.target.files?.[0]) handleFile(e.target.files[0])
   }
 
@@ -131,15 +133,18 @@ export const Upload: React.FC = () => {
               <p className="text-sm text-light-muted mb-4">
                 Supports .csv, .jpg, .png, .jpeg
               </p>
-              <label>
+              <div>
                 <input
+                  ref={fileInputRef}
                   type="file"
                   accept=".csv,image/*"
                   onChange={handleFileInput}
                   className="hidden"
                 />
-                <Button variant="primary">Select File</Button>
-              </label>
+                <Button variant="primary" onClick={() => fileInputRef.current?.click()}>
+                  Select File
+                </Button>
+              </div>
             </div>
           </div>
         </Card>
