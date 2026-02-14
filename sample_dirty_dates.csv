@@ -1,0 +1,5 @@
+date,description,category,transaction_type,taxable_amount,tax_type,tax_rate
+2023-06-15 14:30:00,Afternoon Coffee Meeting,Meals & Entertainment,expense,450.00,GST,5.0
+2023-07-20T09:00:00,Server Maintenance,Technology,expense,2500.00,IGST,18.0
+"August 15, 2023", Independence Day Campaign,Advertising,expense,7000.00,GST,18.0
+2023-09-10 18:00, Late Night Dinner,Meals & Entertainment,expense,1200.00,GST,5.0

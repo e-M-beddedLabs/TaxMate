@@ -11,6 +11,7 @@ from app.core.security import get_current_user
 from app.schemas.tax_record import TaxRecordCreate
 from app.services.csv_import_service import parse_csv_rows
 from app.models.user import User
+from app.utils.parsers import parse_date
 
 router = APIRouter(prefix="/uploads", tags=["Uploads"])
 
@@ -46,14 +47,8 @@ def preview_csv(
     for idx, row in enumerate(reader, start=1):
         try:
             # Try parsing date with multiple formats
-            date_obj = None
             date_str = row["date"].strip()
-            for fmt in date_formats:
-                try:
-                    date_obj = datetime.strptime(date_str, fmt).date()
-                    break
-                except ValueError:
-                    continue
+            date_obj = parse_date(date_str)
             
             if not date_obj:
                 raise ValueError(f"Invalid date format: {date_str}. Expected YYYY-MM-DD or DD-MM-YYYY")
@@ -169,7 +164,39 @@ async def upload_invoices(
         try:
             # Read image
             contents = await file.read()
-            image = Image.open(io.BytesIO(contents))
+            
+            if len(contents) == 0:
+                 results.append({
+                    "filename": file.filename,
+                    "status": "error",
+                    "message": "File is empty"
+                })
+                 continue
+
+            # Check for HEIC signature (ftypheic or similar)
+            # Basic check: first 12 bytes usually contain 'ftyp' and 'heic'/'heix'
+            # offset 4 is 'ftyp', offset 8 is major brand
+            if len(contents) > 12 and contents[4:8] == b'ftyp':
+                 major_brand = contents[8:12]
+                 if major_brand in [b'heic', b'heix', b'heim', b'heis', b'mif1']:
+                      results.append({
+                        "filename": file.filename,
+                        "status": "error",
+                        "message": "HEIC/HEIF format is not supported. Please convert to JPG/PNG."
+                    })
+                      continue
+
+            try:
+                image = Image.open(io.BytesIO(contents))
+                image.verify() # Verify it's an image
+                image = Image.open(io.BytesIO(contents)) # Re-open for processing as verify() can close it
+            except Exception as e:
+                 results.append({
+                    "filename": file.filename,
+                    "status": "error",
+                    "message": f"Invalid image file: {str(e)}. Ensure it is a valid PNG/JPG."
+                })
+                 continue
             
             # Extract text using OCR
             # Extract text using OCR in a thread pool
@@ -220,7 +247,7 @@ async def upload_invoices(
             results.append({
                 "filename": file.filename,
                 "status": "error",
-                "message": str(e)
+                "message": f"Processing failed: {str(e)}"
             })
     
     # Insert valid records
