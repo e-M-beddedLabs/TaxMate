@@ -1,6 +1,6 @@
 date,description,category,transaction_type,taxable_amount,tax_type,tax_rate
-2023-01-15,Office Supplies - Notebooks,Office Expenses,expense,150.00,GST,18.0
-2023-02-10,Google Ads Campaign,Advertising,expense,5000.00,IGST,18.0
-2023-03-05,Client Payment - Invoice #1023,Sales,income,12000.00,NONE,0.0
-2023-04-12,Web Hosting Service,Technology,expense,800.00,GST,18.0
-2023-05-20,Consultation Fee,Professional Services,income,3500.00,NONE,0.0
+2026-02-12,Office Supplies - Notebooks,Office Expenses,expense,150.00,GST,18.0
+2026-02-10,Google Ads Campaign,Advertising,expense,5000.00,IGST,18.0
+2026-02-05,Client Payment - Invoice #1023,Sales,income,12000.00,NONE,0.0
+2026-01-15,Web Hosting Service,Technology,expense,800.00,GST,18.0
+2025-10-20,Consultation Fee,Professional Services,income,3500.00,NONE,0.0
